@@ -1,3 +1,5 @@
+from urllib.parse import urljoin
+
 import requests
 from requests.exceptions import JSONDecodeError
 
@@ -6,12 +8,24 @@ from .save_page_option import SavePageOption
 
 
 class SavePageNowApi:
-    DEFAULT_USER_AGENT = "https://github.com/bac0id/save-page-now-api"
+    DEFAULT_USER_AGENT = "save-page-now-api (https://github.com/bac0id/save-page-now-api)"
 
-    def __init__(self, token: str, user_agent: str = DEFAULT_USER_AGENT):
+    def __init__(
+        self,
+        *,
+        host: str = "https://web.archive.org/",
+        token: str,
+        user_agent: str = DEFAULT_USER_AGENT,
+        proxies=None,
+    ):
+        self.host = host
         self.token = token
         self.user_agent = user_agent
-        self.api_url = "https://web.archive.org/save"
+        self.proxies = proxies
+
+    def __get_save_api_url(self) -> str:
+        api_url = urljoin(self.host, "/save")
+        return api_url
 
     def __get_http_headers(self) -> dict[str, str]:
         headers = {
@@ -46,8 +60,9 @@ class SavePageNowApi:
         )
         payload = option.to_http_post_payload()
 
+        api_url = self.__get_save_api_url()
         response = requests.post(
-            url=self.api_url, headers=headers, data=payload
+            url=api_url, headers=headers, data=payload, proxies=self.proxies
         )
 
         # raise for errors
