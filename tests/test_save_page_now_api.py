@@ -1,15 +1,17 @@
 import unittest
 from unittest.mock import Mock, patch
+from urllib.parse import urljoin
 
 from requests.exceptions import HTTPError, JSONDecodeError
 
 from save_page_now_api import (
     ERROR_CODE_TO_EXCEPTION,
+    SavePageNowApi,
     SavePageNowBadRequestError,
     SavePageNowError,
     SavePageNowNotFoundError,
+    SavePageOption,
 )
-from save_page_now_api import SavePageNowApi, SavePageOption
 
 
 class TestSavePageNowApi(unittest.TestCase):
@@ -19,7 +21,7 @@ class TestSavePageNowApi(unittest.TestCase):
         """Set up a SavePageNowApi instance and common mocks before each test."""
         self.token = "test_token"
         self.user_agent = "test_user_agent"
-        self.api = SavePageNowApi(self.token, self.user_agent)
+        self.api = SavePageNowApi(token=self.token, user_agent=self.user_agent)
         self.test_url = "http://example.com"
 
         # Mock the requests.post method globally for all tests in this class
@@ -45,6 +47,35 @@ class TestSavePageNowApi(unittest.TestCase):
         """Stop the patcher after each test."""
         self.patcher.stop()
 
+    def test_get_save_api_url_default_host(self):
+        """Test __get_save_api_url with the default host."""
+        expected_url = urljoin(
+            SavePageNowApi.DEFAULT_USER_AGENT, "/save"
+        )  # Corrected: use default host, not default user agent
+        expected_url = urljoin("https://web.archive.org/", "/save")
+        self.assertEqual(
+            self.api._SavePageNowApi__get_save_api_url(), expected_url
+        )
+
+    def test_get_save_api_url_custom_host(self):
+        """Test __get_save_api_url with a custom host."""
+        custom_host = "https://web.archivep75mbjunhxc6x4j5mwjmomyxb573v42baldlqu56ruil2oiad.onion/"
+        custom_api = SavePageNowApi(token=self.token, host=custom_host)
+        expected_url = urljoin(custom_host, "/save")
+        self.assertEqual(
+            custom_api._SavePageNowApi__get_save_api_url(), expected_url
+        )
+
+    def test_get_save_api_url_host_without_trailing_slash(self):
+        """Test __get_save_api_url with a custom host without a trailing slash."""
+        custom_host = "https://web.archivep75mbjunhxc6x4j5mwjmomyxb573v42baldlqu56ruil2oiad.onion"  # No trailing slash
+        custom_api = SavePageNowApi(token=self.token, host=custom_host)
+        # urljoin should handle the missing slash correctly
+        expected_url = urljoin(custom_host, "/save")
+        self.assertEqual(
+            custom_api._SavePageNowApi__get_save_api_url(), expected_url
+        )
+
     def test_save_success(self):
         """Test a successful save operation."""
         result = self.api.save(self.test_url)
@@ -59,9 +90,10 @@ class TestSavePageNowApi(unittest.TestCase):
         expected_payload = option.to_http_post_payload()
 
         self.mock_post.assert_called_once_with(
-            url=self.api.api_url,
+            url=self.api._SavePageNowApi__get_save_api_url(),
             headers=expected_headers,
             data=expected_payload,
+            proxies=None,
         )
 
         # Assert that the correct result was returned
@@ -94,9 +126,10 @@ class TestSavePageNowApi(unittest.TestCase):
         }
 
         self.mock_post.assert_called_once_with(
-            url=self.api.api_url,
-            headers=self.api._SavePageNowApi__get_http_headers(),  # Access private method for headers
+            url=self.api._SavePageNowApi__get_save_api_url(),
+            headers=self.api._SavePageNowApi__get_http_headers(),
             data=expected_payload,
+            proxies=None,
         )
 
     def test_save_http_error(self):
