@@ -1,6 +1,9 @@
 name: Unit Tests
 
 on:
+  push:
+  pull_request:
+  merge_group:
   workflow_dispatch:
     inputs:
       target_branch:
