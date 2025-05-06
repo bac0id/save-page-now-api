@@ -17,7 +17,6 @@ except FileNotFoundError:
     )
     print("WARNING: README.md not found. Using a short description.")
 
-
 setup(
     name="save-page-now-api",
     version="0.1.1",
@@ -25,9 +24,8 @@ setup(
     author_email="ji2b13y6i@mozmail.com",
     description="A Python wrapper for the Internet Archive's Save Page Now API.",
     long_description=long_description,
-    long_description_content_type="text/markdown",
     url="https://github.com/bac0id/save-page-now-api",
-    packages=find_packages(),
+    packages=find_packages(exclude=["tests*", "docs*"]),
     install_requires=[
         "requests>=2.0",
     ],
