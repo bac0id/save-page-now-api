@@ -2,7 +2,11 @@ name: Unit Tests
 
 on:
   push:
+    paths:
+      - "save_page_now_api/**"
   pull_request:
+    paths:
+      - "save_page_now_api/**"
   merge_group:
   workflow_dispatch:
     inputs:
