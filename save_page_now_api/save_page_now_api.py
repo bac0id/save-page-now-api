@@ -3,12 +3,14 @@ from urllib.parse import urljoin
 import requests
 from requests.exceptions import JSONDecodeError
 
-from .exception import *
+from .exception import ERROR_CODE_TO_EXCEPTION, SavePageNowError
 from .save_page_option import SavePageOption
 
 
 class SavePageNowApi:
-    DEFAULT_USER_AGENT = "save-page-now-api (https://github.com/bac0id/save-page-now-api)"
+    DEFAULT_USER_AGENT = (
+        "save-page-now-api (https://github.com/bac0id/save-page-now-api)"
+    )
 
     def __init__(
         self,
