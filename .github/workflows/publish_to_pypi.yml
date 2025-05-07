@@ -36,4 +36,3 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           environment: production
-          api_token: ${{ secrets.PYPI_API_TOKEN }}
